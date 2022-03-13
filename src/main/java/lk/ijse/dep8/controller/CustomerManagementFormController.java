@@ -1,6 +1,7 @@
 package lk.ijse.dep8.controller;
 
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
@@ -12,12 +13,11 @@ import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
 import lk.ijse.dep8.util.Customer;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 public class CustomerManagementFormController {
 
@@ -32,6 +32,7 @@ public class CustomerManagementFormController {
     public TableColumn colPicture;
     public TableColumn colOption;
     public Button btnBrowse;
+    public Button btnSave;
     private Path filePath;
 
     public void initialize() {
@@ -54,11 +55,25 @@ public class CustomerManagementFormController {
 
         lastCol.setCellValueFactory(param -> {
             Button btnDelete = new Button("Delete");
-
             btnDelete.setOnAction((event -> tblCustomers.getItems().remove(param.getValue())));
             return new ReadOnlyObjectWrapper<>(btnDelete);
         });
 
+        tblCustomers.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, selectedCustomer) -> {
+            btnSave.setText(selectedCustomer == null ? "Save Customer" : "Update Customer");
+            if (selectedCustomer == null) return;
+
+            txtId.setText(selectedCustomer.getId());
+            txtName.setText(selectedCustomer.getName());
+            txtAddress.setText(selectedCustomer.getAddress());
+
+            if (selectedCustomer.getPicture() != null) {
+                txtPicture.setText("[PICTURE]");
+            }
+
+        });
+
+        txtId.setText(generateNewId());
         createDir();
     }
 
@@ -72,14 +87,28 @@ public class CustomerManagementFormController {
     }
 
     public void btnCancelOnAction(ActionEvent actionEvent) {
+        resetControls();
     }
 
     public void btnSaveOnAction(ActionEvent actionEvent) throws IOException {
-        byte[] bytes = Files.readAllBytes(Paths.get(txtPicture.getText()));
-
-        Customer c = new Customer(txtId.getText(), txtName.getText(), txtAddress.getText(), bytes);
-
-        tblCustomers.getItems().add(c);
+        validate();
+        byte[] picture;
+        if (!txtPicture.getText().equals("[PICTURE]")){
+            picture = Files.readAllBytes(Paths.get(txtPicture.getText()));
+        }else{
+            picture = tblCustomers.getSelectionModel().getSelectedItem().getPicture();
+        }
+        if (btnSave.getText().equals("Save Customer")) {
+            tblCustomers.getItems().add(new Customer(txtId.getText(), txtName.getText(), txtAddress.getText(), picture));
+        } else {
+            Customer customer = tblCustomers.getSelectionModel().getSelectedItem();
+            customer.setName(txtName.getText());
+            customer.setAddress(txtAddress.getText());
+            customer.setPicture(picture);
+        }
+        tblCustomers.refresh();
+        saveData();
+        resetControls();
     }
 
     private void validate () {
@@ -94,6 +123,9 @@ public class CustomerManagementFormController {
         } else if (txtAddress.getText().trim().isEmpty()) {
             txtAddress.requestFocus();
             txtAddress.selectAll();
+            return;
+        } else if (txtPicture.getText().isEmpty()) {
+            btnBrowse.requestFocus();
             return;
         }
     }
@@ -115,6 +147,39 @@ public class CustomerManagementFormController {
 
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void saveData(){
+        try {
+            List<Customer> customers = tblCustomers.getItems();
+            OutputStream outputStream = Files.newOutputStream(filePath);
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+            for (Customer customer : customers) {
+                objectOutputStream.writeObject(customer);
+            }
+            objectOutputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void resetControls () {
+        txtId.clear();
+        txtName.clear();
+        txtAddress.clear();
+        txtPicture.clear();
+        btnSave.setText("Save Customer");
+        txtId.setText(generateNewId());
+    }
+
+    private String generateNewId() {
+        if (tblCustomers.getItems().isEmpty()) {
+            return "C001";
+        } else {
+            ObservableList<Customer> customers = tblCustomers.getItems();
+            int lastCustomerId = Integer.parseInt(customers.get(customers.size() - 1).getId().replace("C", ""));
+            return String.format("C%03d", (lastCustomerId + 1));
         }
     }
 }

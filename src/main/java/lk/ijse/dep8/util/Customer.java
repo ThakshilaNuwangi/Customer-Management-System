@@ -1,6 +1,7 @@
 package lk.ijse.dep8.util;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 public class Customer implements Serializable {
     private String id;
@@ -10,6 +11,12 @@ public class Customer implements Serializable {
 
     public Customer() {
     }
+
+    /*public Customer(String id, String name, String address) {
+        this.id = id;
+        this.name = name;
+        this.address = address;
+    }*/
 
     public Customer(String id, String name, String address, byte[] picture) {
         this.id = id;

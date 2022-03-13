@@ -49,13 +49,13 @@
             </Label>
          </children>
       </VBox>
-      <TextField fx:id="txtId" layoutX="175.0" layoutY="93.0" prefHeight="26.0" prefWidth="653.0" />
+      <TextField fx:id="txtId" editable="false" layoutX="175.0" layoutY="93.0" prefHeight="26.0" prefWidth="653.0" />
       <TextField fx:id="txtName" layoutX="175.0" layoutY="137.0" prefHeight="26.0" prefWidth="653.0" />
       <TextField fx:id="txtAddress" layoutX="175.0" layoutY="184.0" prefHeight="26.0" prefWidth="653.0" />
       <TextField fx:id="txtPicture" editable="false" layoutX="175.0" layoutY="230.0" prefHeight="26.0" prefWidth="605.0" />
       <Button fx:id="btnBrowse" layoutX="783.0" layoutY="230.0" mnemonicParsing="false" onAction="#btnBrowseOnAction" prefHeight="26.0" prefWidth="43.0" text="..." />
       <Button cancelButton="true" layoutX="304.0" layoutY="295.0" mnemonicParsing="false" onAction="#btnCancelOnAction" prefHeight="43.0" prefWidth="156.0" text="Cancel" />
-      <Button defaultButton="true" layoutX="533.0" layoutY="295.0" mnemonicParsing="false" onAction="#btnSaveOnAction" prefHeight="43.0" prefWidth="156.0" text="Save" />
+      <Button fx:id="btnSave" defaultButton="true" layoutX="533.0" layoutY="295.0" mnemonicParsing="false" onAction="#btnSaveOnAction" prefHeight="43.0" prefWidth="156.0" text="Save Customer" />
       <TableView fx:id="tblCustomers" layoutX="32.0" layoutY="386.0" prefHeight="356.0" prefWidth="818.0">
         <columns>
           <TableColumn fx:id="colId" prefWidth="103.0" text="ID" />
