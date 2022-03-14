@@ -75,6 +75,7 @@ public class CustomerManagementFormController {
 
         txtId.setText(generateNewId());
         createDir();
+        loadCustomers();
     }
 
     public void btnBrowseOnAction(ActionEvent actionEvent) {
@@ -106,9 +107,9 @@ public class CustomerManagementFormController {
             customer.setAddress(txtAddress.getText());
             customer.setPicture(picture);
         }
-        tblCustomers.refresh();
         saveData();
         resetControls();
+        loadCustomers();
     }
 
     private void validate () {
@@ -155,9 +156,7 @@ public class CustomerManagementFormController {
             List<Customer> customers = tblCustomers.getItems();
             OutputStream outputStream = Files.newOutputStream(filePath);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
-            for (Customer customer : customers) {
-                objectOutputStream.writeObject(customer);
-            }
+            objectOutputStream.writeObject(customers);
             objectOutputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -180,6 +179,30 @@ public class CustomerManagementFormController {
             ObservableList<Customer> customers = tblCustomers.getItems();
             int lastCustomerId = Integer.parseInt(customers.get(customers.size() - 1).getId().replace("C", ""));
             return String.format("C%03d", (lastCustomerId + 1));
+        }
+    }
+
+    private void loadCustomers () {
+        Path filePath = Paths.get(System.getProperty("user.home"),
+                "DEP",
+                "DatabaseFile",
+                "Customers.dep8");
+
+        if (!Files.exists(filePath)) {
+            System.err.println("No such file to read");
+            return;
+        }
+        try {
+            InputStream inputStream = Files.newInputStream(filePath);
+            ObjectInputStream ois = new ObjectInputStream(inputStream);
+            List<Customer> customers = (List<Customer>) ois.readObject();
+            tblCustomers.getItems().removeAll();
+            for (Customer customer : customers) {
+                tblCustomers.getItems().add(customer);
+            }
+            ois.close();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
         }
     }
 }
